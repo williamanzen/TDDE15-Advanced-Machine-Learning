@@ -5,12 +5,17 @@
 # BiocManager::install("gRain")
 # 
 # install.packages("bnlearn")
-# library(bnlearn)
-# library(RBGL)
-# library(Rgraphviz)
-# library(gRain)
+library(bnlearn)
+library(RBGL)
+library(Rgraphviz)
+library(gRain)
 
 # (1)
+# Show that multiple runs of the hill-climbing algorithm can return non-equivalent Bayesian
+# network (BN) structures. Explain why this happens. Use the Asia dataset which is included in the bnlearn package. To load the data, run data("asia").
+# Hint: Check the function hc in the bnlearn package. Note that you can specify
+# the initial structure, the number of random restarts, the score, and the equivalent sample size (a.k.a imaginary sample size) in the BDeu score. You may want to use these
+# options to answer the question.
 
 data("asia")
 hcOne <- hc(asia) #Standard HC-algorithm - comparing from this network
@@ -49,6 +54,17 @@ cpdag(hcFive)
 arcs(hcOne) #Printing the arcs
 
 #(2)
+# Learn a BN from 80 % of the Asia dataset. The dataset is included in the bnlearn
+# package. To load the data, run data("asia"). Learn both the structure and the
+# parameters. Use any learning algorithm and settings that you consider appropriate.
+# Use the BN learned to classify the remaining 20 % of the Asia dataset in two classes:
+#   S = yes and S = no. In other words, compute the posterior probability distribution of S
+# for each case and classify it in the most likely class. To do so, you have to use exact
+# or approximate inference with the help of the bnlearn and gRain packages, i.e. you
+# are not allowed to use functions such as predict. Report the confusion matrix, i.e.
+# true/false positives/negatives. Compare your results with those of the true Asia BN,
+# which can be obtained by running
+# dag = model2network("[A][S][T|A][L|S][B|S][D|B:E][E|T:L][X|E]")
 
 
 #Function to compute the conditional probability of each observation
@@ -103,8 +119,11 @@ confusionTrue <- table(predictionTrue, test$S)
 confusionTrue
 #Same confusion tables
 
-# (3)
-
+# # (3)
+# In the previous exercise, you classified the variable S given observations for all the
+# rest of the variables. Now, you are asked to classify S given observations only for the
+# so-called Markov blanket of S, i.e. its parents plus its children plus the parents of its
+# children minus S itself. Report again the confusion matrix.
 
 markovObsVarsTrue <- mb(BNTrue, "S")
 mbPredTrue <- predictNet(junctionTreeTrue, test, markovObsVarsTrue, tarVar)
@@ -114,6 +133,11 @@ markovConfusionTrue
 #Same confusion table as in (2) 
 
 # (4)
+# Repeat the exercise (2) using a naive Bayes classifier, i.e. the predictive variables are
+# independent given the class variable. See p. 380 in Bishop's book or Wikipedia for
+# more information on the naive Bayes classifier. Model the naive Bayes classifier as a
+# BN. You have to create the BN by hand, i.e. you are not allowed to use the function
+# naive.bayes from the bnlearn package.
 
 naiveBayesNet <- model2network("[S][A|S][T|S][L|S][B|S][E|S][X|S][D|S]")
 fittedNaive <- bn.fit(naiveBayesNet, train)
@@ -128,6 +152,8 @@ confusionNaive
 confusionTrue
 
 # (5)
+# Explain why you obtain the same or different results in the exercises (2-4).
+
 # Markov Blanket (MB) consists of the nodes of importance for the target nodes' dependencies in the network.
 # If we do not change the MB, the outcome of the prediction on the target node will not change.
 # Since the MB does not change from (2) to (3) nor the two different bayesian networks used in 
